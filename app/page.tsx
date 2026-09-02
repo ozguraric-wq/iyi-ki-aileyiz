@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent, type MouseEvent as ReactMouseEvent } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -575,7 +575,18 @@ export default function Home() {
   const framePosition = useMemo(() => `${(frame % 3) * 50}% ${Math.floor(frame / 3) * 100}%`, [frame]);
   const chooseEpisode = (index: number) => {
     setSelectedEpisode(index);
-    window.setTimeout(() => document.getElementById("episode-detail")?.scrollIntoView({ behavior: "smooth", block: "center" }), 40);
+    window.setTimeout(() => document.getElementById("episode-detail")?.scrollIntoView({ behavior: "auto", block: "center" }), 40);
+  };
+  const navigateToSection = (event: ReactMouseEvent<HTMLAnchorElement>, href: string, closeMenu = false) => {
+    event.preventDefault();
+    const target = document.querySelector<HTMLElement>(href);
+    if (!target) return;
+    const headerOffset = 96;
+    const top = target.getBoundingClientRect().top + window.scrollY - headerOffset;
+    window.scrollTo({ top: Math.max(0, top), behavior: "auto" });
+    window.history.replaceState(null, "", href);
+    event.currentTarget.blur();
+    if (closeMenu) setMenuOpen(false);
   };
 
   if (!authorized) return <AccessGate onSuccess={() => setAuthorized(true)} />;
@@ -584,9 +595,9 @@ export default function Home() {
     <main>
       <header className="site-header">
         <a className="brand" href="#proje" aria-label="İyi Ki Aileyiz"><span className="brand-mark"><HeartHandshake size={22} strokeWidth={1.8} /></span><span><strong>İYİ Kİ AİLEYİZ</strong><small>{locale === "tr" ? "ANİMASYON PROJESİ" : "ANIMATION PROJECT"}</small></span></a>
-        <nav className="desktop-nav" aria-label={locale === "tr" ? "Ana menü" : "Main navigation"}>{c.nav.map(([label, href]) => <a key={href} href={href}>{label}</a>)}</nav>
+        <nav className="desktop-nav" aria-label={locale === "tr" ? "Ana menü" : "Main navigation"}>{c.nav.map(([label, href]) => <a key={href} href={href} onClick={(event) => navigateToSection(event, href)}>{label}</a>)}</nav>
         <div className="header-actions"><button className="language-button" onClick={() => setLocale(locale === "tr" ? "en" : "tr")} aria-label={locale === "tr" ? "Switch to English" : "Türkçeye geç"}><Languages size={17} /> {locale === "tr" ? "EN" : "TR"}</button><button className="menu-button" onClick={() => setMenuOpen(!menuOpen)} aria-expanded={menuOpen} aria-label={locale === "tr" ? "Menüyü aç" : "Open menu"}>{menuOpen ? <X /> : <Menu />}</button></div>
-        {menuOpen && <nav className="mobile-nav">{c.nav.map(([label, href]) => <a key={href} href={href} onClick={() => setMenuOpen(false)}>{label}<ChevronRight size={18} /></a>)}</nav>}
+        {menuOpen && <nav className="mobile-nav">{c.nav.map(([label, href]) => <a key={href} href={href} onClick={(event) => navigateToSection(event, href, true)}>{label}<ChevronRight size={18} /></a>)}</nav>}
       </header>
 
       <section className="hero" id="proje">
