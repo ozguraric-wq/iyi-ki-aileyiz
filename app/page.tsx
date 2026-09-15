@@ -478,81 +478,7 @@ function SectionHeading({ locale, kicker, title, text }: { locale: Locale; kicke
   return <div className="section-heading"><p className="kicker">{kicker[locale]}</p><h2>{title[locale]}</h2>{text && <p className="section-intro">{text[locale]}</p>}</div>;
 }
 
-const USER_HASH = "75da293fa893fbfa8fd5fe575af4445661b67cb715437aebcbbb7b4d6cc34d5b";
-const PASSWORD_HASH = "95f5c93cdf6f7d46d7c7cd41d2b6199ee390f2cc82259ce2233bad2cab194ad3";
-
-async function sha256(value: string) {
-  const data = new TextEncoder().encode(value);
-  const digest = await crypto.subtle.digest("SHA-256", data);
-  return Array.from(new Uint8Array(digest)).map((byte) => byte.toString(16).padStart(2, "0")).join("");
-}
-
-function AccessGate({ onSuccess }: { onSuccess: () => void }) {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState(false);
-  const [loading, setLoading] = useState(false);
-
-  const submit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setLoading(true);
-    setError(false);
-    const [userHash, passwordHash] = await Promise.all([sha256(username.trim()), sha256(password)]);
-    if (userHash === USER_HASH && passwordHash === PASSWORD_HASH) {
-      window.sessionStorage.setItem("iyikiaileyiz-access", "granted");
-      onSuccess();
-      return;
-    }
-    setLoading(false);
-    setError(true);
-  };
-
-  return (
-    <main className="access-gate">
-      <img className="access-backdrop" src={`${ASSET_PREFIX}/images/yalin-family-hero.webp`} alt="" />
-      <div className="access-overlay" />
-      <div className="access-topbar">
-        <a className="access-project-brand" href="https://rateldijital.com" target="_blank" rel="noreferrer">
-          <span className="brand-mark"><HeartHandshake size={22} strokeWidth={1.8} /></span>
-          <span><strong>İYİ Kİ AİLEYİZ</strong><small>ANİMASYON PROJESİ</small></span>
-        </a>
-        <span className="access-status"><i /> ÖZEL PROJE SUNUMU</span>
-      </div>
-
-      <section className="access-panel" aria-labelledby="access-title">
-        <div className="access-intro">
-          <p className="access-kicker">RATEL DİJİTAL SUNAR</p>
-          <div className="ratel-wordmark" aria-label="Ratel Dijital"><strong>RATEL</strong><span>DİJİTAL</span></div>
-          <h1 id="access-title">Birlikte büyüyen güvenin animasyon dünyası.</h1>
-          <p>“İyi Ki Aileyiz” projesinin kapsamını, 15 bölümlük anlatı evrenini ve yapım modelini incelemek üzere hazırlanmış özel sunum alanı.</p>
-          <a className="ratel-link" href="https://rateldijital.com" target="_blank" rel="noreferrer">rateldijital.com <ArrowRight size={16} /></a>
-        </div>
-
-        <form className="access-form" onSubmit={submit}>
-          <div className="access-lock"><LockKeyhole size={23} /></div>
-          <p className="access-form-kicker">YETKİLİ ERİŞİMİ</p>
-          <h2>Proje sunumuna giriş</h2>
-          <p className="access-form-copy">Size iletilen kullanıcı adı ve şifreyle devam edin.</p>
-          <label>
-            <span>Kullanıcı adı</span>
-            <input value={username} onChange={(event) => setUsername(event.target.value)} autoComplete="username" spellCheck={false} required />
-          </label>
-          <label>
-            <span>Şifre</span>
-            <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="current-password" required />
-          </label>
-          {error && <p className="access-error" role="alert">Kullanıcı adı veya şifre hatalı. Lütfen tekrar deneyin.</p>}
-          <button type="submit" disabled={loading}>{loading ? "Doğrulanıyor…" : "Sunuma giriş"}<ArrowRight size={18} /></button>
-          <small>Bu sunum Ratel Dijital tarafından kurum değerlendirmesi için hazırlanmıştır.</small>
-        </form>
-      </section>
-      <p className="access-footer">© 2026 RATEL DİJİTAL · HAYAL ET · TASARLA · GELİŞTİR · ÜRET</p>
-    </main>
-  );
-}
-
 export default function Home() {
-  const [authorized, setAuthorized] = useState(false);
   const [locale, setLocale] = useState<Locale>("tr");
   const [menuOpen, setMenuOpen] = useState(false);
   const [selectedEpisode, setSelectedEpisode] = useState(0);
@@ -563,7 +489,6 @@ export default function Home() {
   const episode = episodes[selectedEpisode];
   const board = storyboardSets[boardIndex];
 
-  useEffect(() => { setAuthorized(window.sessionStorage.getItem("iyikiaileyiz-access") === "granted"); }, []);
   useEffect(() => { document.documentElement.lang = locale; }, [locale]);
   useEffect(() => {
     if (!playing) return;
@@ -589,7 +514,6 @@ export default function Home() {
     if (closeMenu) setMenuOpen(false);
   };
 
-  if (!authorized) return <AccessGate onSuccess={() => setAuthorized(true)} />;
 
   return (
     <main>
